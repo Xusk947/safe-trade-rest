@@ -1,16 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import multer from 'multer';
 import { PrismaService } from 'src/prisma/services/prisma/prisma.service';
 
 @Injectable()
 export class FileService {
+    private logger = new Logger(FileService.name)
+
     constructor(
         private readonly prisma: PrismaService
     ) { }
 
     private async saveFileRecord(data: Prisma.FileInputCreateInput) {
-        return this.prisma.fileInput.create({ data });
+        let record = await this.prisma.fileInput.create({ data });
+
+        this.logger.log(`Saved file record ${record.id} - ${record.filename}`)
+
+        return record
     }
 
     public async updateFileUser(userId: number, fileId: number) {

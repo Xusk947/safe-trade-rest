@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from "../../../prisma/services/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { Items, TradeParams, TradeStatus } from 'src/trade/utils/types';
@@ -6,6 +6,7 @@ import { UpdateTradeDto } from 'src/trade/dtos/update.trade.dto';
 
 @Injectable()
 export class TradeService {
+    private logger = new Logger(TradeService.name)
     constructor(
         private readonly prisma: PrismaService
     ) {
@@ -142,6 +143,8 @@ export class TradeService {
             }
         })
 
+        this.logger.log(`Updated trade ${tradeUpdated.id}`)
+
         return tradeUpdated
     }
 
@@ -177,6 +180,8 @@ export class TradeService {
                 }
             })
         }
+
+        this.logger.log(`Get trade ${trade.id}`)
 
         return {
             ...trade,
@@ -262,6 +267,8 @@ export class TradeService {
 
         const tradeKey = toHex(`${trade.creatorId}-${trade.id}`)
         const tradeLink = `https://t.me/safetrade_robot/safetrade?startapp=trade-${tradeKey}`
+
+        this.logger.log(`Created trade ${trade.id}`)
 
         return {
             tradeId: trade.id,
