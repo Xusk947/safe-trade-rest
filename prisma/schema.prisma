@@ -1,0 +1,124 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         Int        @id @unique
+    firstname  String     @db.VarChar(64)
+    lastname   String?    @db.VarChar(64)
+    username   String?    @db.VarChar(32)
+    language   String     @db.VarChar(2)
+    is_premium Boolean
+    createdAt  DateTime   @default(now())
+    UserInfo   UserInfo[]
+
+    creator Trade[] @relation("creator")
+    trader  Trade[] @relation("trader")
+
+    FileInput FileInput[]
+}
+
+model UserInfo {
+    user   User    @relation(fields: [userId], references: [id])
+    userId Int     @id @unique
+    wallet String?
+}
+
+model Trade {
+    id Int @id @unique @default(autoincrement())
+
+    creator   User @relation("creator", fields: [creatorId], references: [id])
+    creatorId Int
+
+    trader   User? @relation("trader", fields: [traderId], references: [id])
+    traderId Int?
+
+    creatorWallet String
+    traderWallet  String?
+
+    creatorCollection   ItemsCollection? @relation("creatorCollection", fields: [creatorCollectionId], references: [id])
+    creatorCollectionId Int?
+
+    traderCollection   ItemsCollection? @relation("traderCollection", fields: [traderCollectionId], references: [id])
+    traderCollectionId Int?
+
+    creatorConfirmed Int @default(-1)
+    traderConfirmed Int @default(-1)
+
+    status String @default("CREATED")
+
+    createdAt   DateTime      @default(now())
+    TradeWallet TradeWallet[]
+}
+
+model TradeWallet {
+    trade Trade @relation(fields: [id], references: [id])
+    id Int @id @unique @default(autoincrement())
+
+    address String
+    mnemonics String
+}
+
+model ItemsCollection {
+    id Int @id @default(autoincrement())
+
+    NftItem   NftItem[]
+    FileItem  FileItem[]
+    TokenItem TokenItem[]
+
+    creatorCollection Trade[] @relation("creatorCollection")
+
+    traderCollection Trade[] @relation("traderCollection")
+}
+
+model NftItem {
+    id                 Int     @id @unique @default(autoincrement())
+    name               String  @db.VarChar(128)
+    address            String  @db.VarChar(128)
+    imageUrl           String  @db.VarChar(255)
+    collection         String? @db.VarChar(64)
+    collectionImageUrl String? @db.VarChar(255)
+
+    ItemsCollection ItemsCollection @relation(fields: [collectionId], references: [id])
+    collectionId    Int
+}
+
+model TokenItem {
+    id      Int    @id @unique @default(autoincrement())
+    address String @db.VarChar(128)
+    name    String @db.VarChar(128)
+    symbol  String @db.VarChar(16)
+    amount  Float
+
+    ItemsCollection ItemsCollection @relation(fields: [collectionId], references: [id])
+    collectionId    Int
+}
+
+model FileInput {
+    id            Int    @id @unique @default(autoincrement())
+    filename      String
+    fileextension String
+    fileSize      Int
+
+    user   User? @relation(fields: [userId], references: [id])
+    userId Int?
+
+    creationDate DateTime @default(now())
+
+    FileItem FileItem[]
+}
+
+model FileItem {
+    id Int @id @unique @default(autoincrement())
+
+    fileInput FileInput @relation(fields: [fileId], references: [id])
+    fileId    Int
+
+    ItemsCollection ItemsCollection @relation(fields: [collectionId], references: [id])
+    collectionId    Int
+}
