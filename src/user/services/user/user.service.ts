@@ -27,7 +27,7 @@ export class UserService {
         if (hasUser) {
             return new HttpException("User already exists", 400)
         }
-        
+
         return this.prisma.user.create(
             {
                 data,
