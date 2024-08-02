@@ -23,11 +23,7 @@ export class ReferralsService {
             }
         })
 
-        let refBodies = []
-
-        for (const referral of referrals) {
-            
-        }
+        const referralIds = referrals.map((referral) => referral.referral.id);
 
         let trades = await this.prisma.trade.findMany({
             where: {
@@ -39,10 +35,14 @@ export class ReferralsService {
             }
         })
 
-        for (const trade of trades) {
-            
-        }
-
-        return
+        const processedReferrals = referrals.map((referral) => {
+            const tradesByReferral = trades.filter((trade) => trade.creatorId === referral.referral.id);
+            return {
+                ...referral.referral,
+                trades: tradesByReferral
+            };
+        });
+    
+        return processedReferrals
     }
 }
