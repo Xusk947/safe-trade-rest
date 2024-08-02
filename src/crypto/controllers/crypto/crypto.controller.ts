@@ -5,6 +5,6 @@ import { TonApiClient } from 'src/crypto/client/tonApiClient';
 export class CryptoController {
     @Get("account/:id/jetton") 
     async getAccount(@Param('id') id: string) {
-        return TonApiClient.accounts.getAccountJettonsBalances(id)
+        return await TonApiClient.accounts.getAccountJettonsBalances(id)
     }
 }
