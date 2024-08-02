@@ -11,6 +11,6 @@ export class CryptoController {
         let response = await TonApiClient.accounts.getAccountJettonsBalances(id)
 
 
-        return response.balances
+        return response
     }
 }
