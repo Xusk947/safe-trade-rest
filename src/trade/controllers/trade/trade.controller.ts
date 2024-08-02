@@ -5,13 +5,13 @@ import { TradeService } from 'src/trade/services/trade/trade.service';
 
 @Controller('trade')
 export class TradeController {
-    constructor (
+    constructor(
         private readonly tradeService: TradeService
     ) { }
 
     @Post()
     async createTrade(@Body() data: CreateTradeDto) {
-        return await this.tradeService.createTrade(data)    
+        return await this.tradeService.createTrade(data)
     }
 
     @Post(":id/:userId/:status")
@@ -19,13 +19,18 @@ export class TradeController {
         return await this.tradeService.acceptTrade(id, userId, status)
     }
 
-    @Put() 
+    @Put()
     async updateTrade(@Body() data: UpdateTradeDto) {
         return await this.tradeService.updateTrade(data)
     }
 
-    @Get(":id") 
+    @Get(":id")
     async getTrade(@Param('id') id: number) {
         return await this.tradeService.getTrade(id)
+    }
+
+    @Get("user/:id")
+    async getTrades(@Param('id') id: number) {
+        return await this.tradeService.getTrades(id)
     }
 }

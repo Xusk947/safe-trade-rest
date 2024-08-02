@@ -275,6 +275,29 @@ export class TradeService {
             tradeLink: tradeLink
         }
     }
+
+    async getTrades(userId: number) {
+        let trades = await this.prisma.trade.findMany({
+            where: {
+                OR: [
+                    {
+                        creatorId: Number(userId)
+                    },
+                    {
+                        traderId: Number(userId)
+                    }
+                ]
+            },
+            include: {
+                creatorCollection: true,
+                traderCollection: true
+            }
+        })
+
+        this.logger.log(`Get trades ${trades.length} for user ${userId}`)
+
+        return trades
+    }
 }
 
 function toHex(str) {

@@ -8,19 +8,34 @@ datasource db {
 }
 
 model User {
-    id         Int        @id @unique
-    firstname  String     @db.VarChar(64)
-    lastname   String?    @db.VarChar(64)
-    username   String?    @db.VarChar(32)
-    language   String     @db.VarChar(2)
+    id         Int     @id @unique
+    firstname  String  @db.VarChar(64)
+    lastname   String? @db.VarChar(64)
+    username   String? @db.VarChar(32)
+    language   String  @db.VarChar(2)
     is_premium Boolean
-    createdAt  DateTime   @default(now())
-    UserInfo   UserInfo[]
+
+    createdAt DateTime @default(now())
+
+    UserInfo UserInfo[]
 
     creator Trade[] @relation("creator")
     trader  Trade[] @relation("trader")
 
     FileInput FileInput[]
+
+    userInviter  UserReferrals[] @relation("userInviter")
+    userReferral UserReferrals[] @relation("userReferral")
+}
+
+model UserReferrals {
+    referral   User @relation("userReferral", fields: [referralId], references: [id])
+    referralId Int @id @unique
+
+    inviter   User @relation("userInviter", fields: [inviterId], references: [id])
+    inviterId Int
+
+    createdAt DateTime @default(now())
 }
 
 model UserInfo {
@@ -48,9 +63,11 @@ model Trade {
     traderCollectionId Int?
 
     creatorConfirmed Int @default(-1)
-    traderConfirmed Int @default(-1)
+    traderConfirmed  Int @default(-1)
 
     status String @default("CREATED")
+
+    refTaxDone Boolean @default(false)
 
     createdAt   DateTime      @default(now())
     TradeWallet TradeWallet[]
@@ -58,9 +75,9 @@ model Trade {
 
 model TradeWallet {
     trade Trade @relation(fields: [id], references: [id])
-    id Int @id @unique @default(autoincrement())
+    id    Int   @id @unique @default(autoincrement())
 
-    address String
+    address   String
     mnemonics String
 }
 

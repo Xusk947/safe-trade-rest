@@ -23,13 +23,12 @@ export class UserService {
         return user
     }
 
-    async createUser(data: Prisma.UserCreateInput) {
+    async createUser(data: Prisma.UserCreateInput & {referral?: number}) {
         let hasUser = await this.prisma.user.findUnique({
             where: {
                 id: data.id
             }
         })
-
 
         if (hasUser) {
             return new HttpException("User already exists", 409)
@@ -41,7 +40,18 @@ export class UserService {
             }
         );
 
-        this.logger.log(`Created user ${newUser}`)
+        if (data.referral) {
+            let ref = data.referral
+
+            await this.prisma.userReferrals.create({
+                data: {
+                    inviterId: ref,
+                    referralId: data.id
+                }
+            })
+        }
+
+        this.logger.log(`Created user ${newUser} ${data.referral ? 'with referral ' + data.referral : ''}`)
 
         return newUser
     }

@@ -7,11 +7,12 @@ import { PrismaService } from "./prisma/services/prisma/prisma.service";
 import { UserInfoModule } from "./user-info/user-info.module";
 import { TradeModule } from './trade/trade.module';
 import { FileModule } from './file/file.module';
+import { CryptoModule } from './crypto/crypto.module';
 
 @Module({
     imports: [ConfigModule.forRoot({
         isGlobal: true
-    }), UserModule, UserInfoModule, TradeModule, FileModule],
+    }), UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule],
     controllers: [AppController],
     providers: [AppService, PrismaService]
 })
