@@ -5,7 +5,7 @@ import { Prisma, User } from "@prisma/client";
 @Injectable()
 export class UserService {
     private logger = new Logger(UserService.name)
-    
+
     constructor(
         private readonly prisma: PrismaService
     ) {
@@ -23,7 +23,7 @@ export class UserService {
         return user
     }
 
-    async createUser(data: Prisma.UserCreateInput & {referral?: number}) {
+    async createUser(data: Prisma.UserCreateInput & { referral?: number }) {
         let hasUser = await this.prisma.user.findUnique({
             where: {
                 id: data.id
@@ -34,18 +34,24 @@ export class UserService {
             return new HttpException("User already exists", 409)
         }
 
-        let newUser = await this.prisma.user.create(
-            {
-                data: {
-                    firstname: data.firstname,
-                    lastname: data.lastname,
-                    username: data.username,
-                    language: data.language,
-                    is_premium: data.is_premium,
-                    id: data.id
-                },
-            }
-        );
+        try {
+            let newUser = await this.prisma.user.create(
+                {
+                    data: {
+                        firstname: data.firstname,
+                        lastname: data.lastname,
+                        username: data.username,
+                        language: data.language,
+                        is_premium: data.is_premium,
+                        id: data.id
+                    },
+                }
+            );
+        } catch (error) {
+            Logger.error(`Error while creating user ${error} ${JSON.stringify(data)}`)
+            return new HttpException(error, 500)
+        }
+        
 
         if (data.referral && data.referral != data.id) {
             let ref = data.referral
