@@ -5,5 +5,5 @@ export class CreateUserDto {
     username?: string | null;
     language: string;
     is_premium: boolean;
-    referral?: number;
+    referral?: bigint | number;
 }

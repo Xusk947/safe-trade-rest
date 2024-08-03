@@ -201,7 +201,7 @@ export class TradeService {
             return new HttpException("Trade not found", 404)
         }
 
-        let creatorStatus = trade.creatorId === BigInt(userId)
+        let creatorStatus = BigInt(trade.creatorId) === BigInt(userId)
 
         if (creatorStatus) {
             const updatedTrade = await this.prisma.trade.update({
@@ -224,7 +224,7 @@ export class TradeService {
             }
         }
 
-        let traderStatus = trade.traderId === BigInt(userId)
+        let traderStatus = BigInt(trade.traderId) === BigInt(userId)
 
         if (traderStatus) {
             let updatedTrade = await this.prisma.trade.update({

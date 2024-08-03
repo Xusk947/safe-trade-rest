@@ -23,7 +23,7 @@ export class UserService {
         return user
     }
 
-    async createUser(data: Prisma.UserCreateInput & { referral?: number }) {
+    async createUser(data: Prisma.UserCreateInput & { referral?: number | bigint }) {
         let hasUser = await this.prisma.user.findUnique({
             where: {
                 id: data.id
