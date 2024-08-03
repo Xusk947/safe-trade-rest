@@ -50,7 +50,7 @@ export class UserService {
                 }
             );
         } catch (error) {
-            Logger.error(`Error while creating user ${error} ${JSON.stringify(data)}`)
+            Logger.error(`Error while creating user ${error} ${data.id} - ${data.firstname} ${data.username}`)
             return new HttpException(error, 500)
         }
         
