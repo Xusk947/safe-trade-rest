@@ -34,8 +34,10 @@ export class UserService {
             return new HttpException("User already exists", 409)
         }
 
+        let newUser: { id: number; firstname: string; lastname: string | null; username: string | null; language: string; is_premium: boolean; createdAt: Date; };
+
         try {
-            let newUser = await this.prisma.user.create(
+            newUser = await this.prisma.user.create(
                 {
                     data: {
                         firstname: data.firstname,
