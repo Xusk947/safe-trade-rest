@@ -9,9 +9,9 @@ export class ReferralsService {
     ) { }
 
     public async getReferralsByUserId(userId: number) {
-        let referrals = await this.prisma.userReferrals.findMany({
+        let refs = await this.prisma.userReferrals.findMany({
             where: {
-                inviterId: userId
+                inviterId: Number(userId)
             },
             orderBy: {
                 inviter: {
@@ -23,11 +23,11 @@ export class ReferralsService {
             }
         })
 
-        const referralIds = referrals.map((referral) => referral.referral.id);
+        // const referralIds = referrals.map((referral) => referral.referral.id);
 
         let trades = await this.prisma.trade.findMany({
             where: {
-                creatorId: { in: referrals.map((referral) => referral.inviterId) },
+                creatorId: { in: refs.map((referral) => referral.inviterId) },
                 refTaxDone: false
             },
             include: {
@@ -35,7 +35,7 @@ export class ReferralsService {
             }
         })
 
-        const processedReferrals = referrals.map((referral) => {
+        const referrals = refs.map((referral) => {
             const tradesByReferral = trades.filter((trade) => trade.creatorId === referral.referral.id);
             return {
                 ...referral.referral,
@@ -43,6 +43,6 @@ export class ReferralsService {
             };
         });
     
-        return processedReferrals
+        return referrals
     }
 }
