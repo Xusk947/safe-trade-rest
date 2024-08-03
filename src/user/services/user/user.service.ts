@@ -58,7 +58,7 @@ export class UserService {
             })
         }
 
-        this.logger.log(`Created user ${newUser} ${data.referral ? 'with referral ' + data.referral : ''}`)
+        this.logger.log(`Created user ${newUser} ${(data.referral && data.referral != data.id) ? 'with referral ' + data.referral : ''}`)
 
         return newUser
     }
