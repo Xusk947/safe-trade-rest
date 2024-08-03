@@ -34,18 +34,18 @@ export class UserService {
             return new HttpException("User already exists", 409)
         }
 
-        let newUser = this.prisma.user.create(
+        let newUser = await this.prisma.user.create(
             {
                 data,
             }
         );
 
-        if (data.referral) {
+        if (data.referral && data.referral != data.id) {
             let ref = data.referral
 
             await this.prisma.userReferrals.create({
                 data: {
-                    inviterId: ref,
+                    inviterId: Number(ref),
                     referralId: data.id
                 }
             })
