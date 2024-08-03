@@ -14,7 +14,15 @@ export class UserController {
 
     @Post()
     async createUser(@Body() data: CreateUserDto) {
-        return await this.userService.createUser(data);
+        return await this.userService.createUser({
+            firstname: data.firstname,
+            lastname: data.lastname,
+            username: data.username,
+            language: data.language,
+            is_premium: data.is_premium,
+            id: data.id,
+            referral: data.referral
+        });
     }
 
     @Get(":id")
