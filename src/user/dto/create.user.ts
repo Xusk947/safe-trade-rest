@@ -1,5 +1,5 @@
 export class CreateUserDto {
-    id: number;
+    id: bigint | number;
     firstname: string;
     lastname?: string | null
     username?: string | null;

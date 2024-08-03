@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-    id         Int     @id @unique
+    id         BigInt     @id @unique
     firstname  String  @db.VarChar(64)
     lastname   String? @db.VarChar(64)
     username   String? @db.VarChar(32)
@@ -30,17 +30,17 @@ model User {
 
 model UserReferrals {
     referral   User @relation("userReferral", fields: [referralId], references: [id])
-    referralId Int @id @unique
+    referralId BigInt @id @unique
 
     inviter   User @relation("userInviter", fields: [inviterId], references: [id])
-    inviterId Int
+    inviterId BigInt
 
     createdAt DateTime @default(now())
 }
 
 model UserInfo {
     user   User    @relation(fields: [userId], references: [id])
-    userId Int     @id @unique
+    userId BigInt     @id @unique
     wallet String?
 }
 
@@ -48,10 +48,10 @@ model Trade {
     id Int @id @unique @default(autoincrement())
 
     creator   User @relation("creator", fields: [creatorId], references: [id])
-    creatorId Int
+    creatorId BigInt
 
     trader   User? @relation("trader", fields: [traderId], references: [id])
-    traderId Int?
+    traderId BigInt?
 
     creatorWallet String
     traderWallet  String?
@@ -123,7 +123,7 @@ model FileInput {
     fileSize      Int
 
     user   User? @relation(fields: [userId], references: [id])
-    userId Int?
+    userId BigInt?
 
     creationDate DateTime @default(now())
 
