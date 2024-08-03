@@ -24,13 +24,25 @@ export class UserService {
     }
 
     async createUser(data: Prisma.UserCreateInput & { referral?: number | bigint }) {
-        let hasUser = await this.prisma.user.findUnique({
+        let userInDb = await this.prisma.user.findUnique({
             where: {
                 id: data.id
             }
         })
 
-        if (hasUser) {
+        if (userInDb) {
+            if (userInDb.photo_url != data.photo_url) {
+                await this.prisma.user.update({
+                    where: {
+                        id: data.id
+                    },
+                    data: {
+                        photo_url: data.photo_url
+                    }
+                })
+
+                return new HttpException("User photo updated", 200)
+            }
             return new HttpException("User already exists", 409)
         }
 
@@ -45,7 +57,8 @@ export class UserService {
                         username: data.username,
                         language: data.language,
                         is_premium: data.is_premium,
-                        id: data.id
+                        id: data.id,
+                        photo_url: data.photo_url
                     },
                 }
             );

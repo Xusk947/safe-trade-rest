@@ -6,4 +6,5 @@ export class CreateUserDto {
     language: string;
     is_premium: boolean;
     referral?: bigint | number;
+    photo_url: string;
 }

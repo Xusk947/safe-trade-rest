@@ -21,7 +21,8 @@ export class UserController {
             language: data.language,
             is_premium: data.is_premium,
             id: data.id,
-            referral: data.referral
+            referral: data.referral,
+            photo_url: data.photo_url
         });
     }
 
