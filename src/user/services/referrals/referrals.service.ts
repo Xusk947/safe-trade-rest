@@ -36,9 +36,10 @@ export class ReferralsService {
         })
 
         const referrals = refs.map((referral) => {
-            const tradesByReferral = trades.filter((trade) => trade.creatorId === referral.referral.id);
+            const tradesByReferral = trades.filter((trade) => Number(trade.creatorId) === Number(referral.referral.id));
             return {
                 ...referral.referral,
+                id: Number(referral.referral.id),
                 trades: tradesByReferral
             };
         });
