@@ -36,7 +36,14 @@ export class UserService {
 
         let newUser = await this.prisma.user.create(
             {
-                data,
+                data: {
+                    firstname: data.firstname,
+                    lastname: data.lastname,
+                    username: data.username,
+                    language: data.language,
+                    is_premium: data.is_premium,
+                    id: data.id
+                },
             }
         );
 
