@@ -8,7 +8,8 @@ export type TokenItem = {
     address: string
     name: string,
     symbol: string,
-    amount: number
+    amount: number,
+    image: string
 }
 
 export type FileItem = {

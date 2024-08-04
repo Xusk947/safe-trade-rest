@@ -111,6 +111,7 @@ model TokenItem {
     address String @db.VarChar(128)
     name    String @db.VarChar(128)
     symbol  String @db.VarChar(16)
+    image   String 
     amount  Float
 
     ItemsCollection ItemsCollection @relation(fields: [collectionId], references: [id])
