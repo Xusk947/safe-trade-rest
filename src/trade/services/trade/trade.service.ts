@@ -312,7 +312,7 @@ export class TradeService {
 }
 
 export function stringToHex(str: string) {
-    return Buffer.from(str, 'utf8').toString('hex');
+    return Buffer.from(str, 'utf8').toString();
 }
 
 export function hexToString(hex: string) {
