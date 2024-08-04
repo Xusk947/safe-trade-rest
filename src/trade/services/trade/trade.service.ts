@@ -276,7 +276,7 @@ export class TradeService {
             }
         })
 
-        const tradeKey = toHex(`${trade.creatorId}-${trade.id}`)
+        const tradeKey = stringToHex(`t-${trade.id}-t`)
         const tradeLink = `https://t.me/safetrade_robot/safetrade?startapp=trade-${tradeKey}`
 
         this.logger.log(`Created trade ${trade.id}`)
@@ -311,10 +311,10 @@ export class TradeService {
     }
 }
 
-function toHex(str) {
-    var result = '';
-    for (var i = 0; i < str.length; i++) {
-        result += str.charCodeAt(i).toString(16);
-    }
-    return result;
+export function stringToHex(str: string) {
+    return Buffer.from(str, 'utf8').toString('hex');
+}
+
+export function hexToString(hex: string) {
+    return Buffer.from(hex, 'hex').toString();
 }
