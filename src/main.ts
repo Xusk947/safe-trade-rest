@@ -1,9 +1,8 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { stringToHex } from "./trade/services/trade/trade.service";
 
 async function bootstrap() {
-    console.log(process.env.PORT || 3000)
-    
     const app = await NestFactory.create(AppModule, {
         cors: true,
     });

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/services/prisma/prisma.service';
+import '../../../extensions/bigintExtensions'
 
 @Injectable()
 export class ReferralsService {
@@ -13,7 +14,7 @@ export class ReferralsService {
     public async getReferralsByUserId(userId: number) {
         let refs = await this.prisma.userReferrals.findMany({
             where: {
-                inviterId: Number(userId)
+                inviterId: userId
             },
             orderBy: {
                 inviter: {
@@ -24,8 +25,6 @@ export class ReferralsService {
                 referral: true,
             }
         })
-
-        // const referralIds = referrals.map((referral) => referral.referral.id);
 
         let trades = await this.prisma.trade.findMany({
             where: {
@@ -38,10 +37,10 @@ export class ReferralsService {
         })
 
         const referrals = refs.map((referral) => {
-            const tradesByReferral = trades.filter((trade) => Number(trade.creatorId) === Number(referral.referral.id));
+            const tradesByReferral = trades.filter((trade) => trade.creatorId == referral.referral.id);
             return {
                 ...referral.referral,
-                id: Number(referral.referral.id),
+                id: referral.referral.id,
                 trades: tradesByReferral
             };
         });

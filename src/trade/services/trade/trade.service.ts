@@ -148,6 +148,40 @@ export class TradeService {
         return tradeUpdated
     }
 
+    async joinTrade(tradeId: number, userId: BigInt) {
+        let trade = await this.prisma.trade.findUnique({
+            where: {
+                id: Number(tradeId)
+            }
+        })
+
+        if (!trade) {
+            return new HttpException("Trade not found", 404)
+        }
+
+        if (trade.traderId == userId) {
+            return new HttpException("You can't join your own trade", 403)
+        }
+
+        if (trade.traderId) {
+            return new HttpException("Trade already joined", 409)
+        }
+
+        await this.prisma.trade.update({
+            where: {
+                id: Number(tradeId)
+            },
+            data: {
+                traderId: Number(userId)
+            }
+        })
+
+        return {
+            status: 200,
+            message: "Trade joined"
+        }
+    }
+
     async getTrade(id: number) {
         let trade = await this.prisma.trade.findUnique({
             where: {
@@ -301,7 +335,9 @@ export class TradeService {
             },
             include: {
                 creatorCollection: true,
-                traderCollection: true
+                traderCollection: true,
+                creator: true,
+                trader: true,
             }
         })
 
@@ -312,7 +348,7 @@ export class TradeService {
 }
 
 export function stringToHex(str: string) {
-    return Buffer.from(str, 'utf8').toString();
+    return Buffer.from(str, 'utf8').toString('hex');
 }
 
 export function hexToString(hex: string) {

@@ -20,15 +20,10 @@ export class TradeController {
     }
 
     @Post(":id/:userId")
-    async joinTrade(@Param('id') id: number, @Param('userId') userId: number) {
-        
+    async joinTrade(@Param('id') id: number, @Param('userId') userId: string) {
+        return await this.tradeService.joinTrade(id, BigInt(userId))
     }
-
-    @Put()
-    async updateTrade(@Body() data: UpdateTradeDto) {
-        return await this.tradeService.updateTrade(data)
-    }
-
+    
     @Get(":id")
     async getTrade(@Param('id') id: number) {
         return await this.tradeService.getTrade(id)

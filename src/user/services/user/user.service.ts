@@ -1,7 +1,7 @@
 import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../../../prisma/services/prisma/prisma.service";
 import { Prisma, User } from "@prisma/client";
-
+import '../../../extensions/bigintExtensions'
 @Injectable()
 export class UserService {
     private logger = new Logger(UserService.name)
@@ -14,11 +14,11 @@ export class UserService {
     async user(
         userWhereUniqueInput: Prisma.UserWhereUniqueInput
     ): Promise<User | null> {
-        let user = this.prisma.user.findUnique({
+        let user = await this.prisma.user.findUnique({
             where: userWhereUniqueInput
         });
 
-        this.logger.log(`Found user ${user}`)
+        this.logger.log(`Found user ${user.id}`)
 
         return user
     }
@@ -73,7 +73,7 @@ export class UserService {
 
             await this.prisma.userReferrals.create({
                 data: {
-                    inviterId: Number(ref),
+                    inviterId: ref,
                     referralId: data.id
                 }
             })
