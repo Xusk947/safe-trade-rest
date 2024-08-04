@@ -192,6 +192,7 @@ export class TradeService {
             id: Number(trade.id),
             refTaxDone: trade.refTaxDone,
             status: trade.status,
+            traderCollection: traderCollection,
             traderCollectionId: trade.traderCollectionId,
             traderConfirmed: trade.traderConfirmed,
             traderId: Number(trade.traderId),
