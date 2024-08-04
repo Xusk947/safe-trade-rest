@@ -311,7 +311,7 @@ export class TradeService {
         })
 
         const tradeKey = stringToHex(`t-${trade.id}-t`)
-        const tradeLink = `https://t.me/safetrade_robot/safetrade?startapp=trade-${tradeKey}`
+        const tradeLink = `https://t.me/safetrade_robot/safetrade?startapp=${tradeKey}`
 
         this.logger.log(`Created trade ${trade.id}`)
 
