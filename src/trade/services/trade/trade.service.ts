@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from "../../../prisma/services/prisma/prisma.service";
-import { Prisma } from "@prisma/client";
+import { Prisma, Trade } from "@prisma/client";
 import { Items, TradeParams, TradeStatus } from 'src/trade/utils/types';
 import { UpdateTradeDto } from 'src/trade/dtos/update.trade.dto';
 
@@ -184,9 +184,18 @@ export class TradeService {
         this.logger.log(`Get trade ${trade.id}`)
 
         return {
-            ...trade,
-            creatorCollection,
-            traderCollection
+            createdAt: trade.createdAt,
+            creatorCollectionId: trade.creatorCollectionId,
+            creatorConfirmed: trade.creatorConfirmed,
+            creatorId: Number(trade.creatorId),
+            creatorWallet: trade.creatorWallet,
+            id: Number(trade.id),
+            refTaxDone: trade.refTaxDone,
+            status: trade.status,
+            traderCollectionId: trade.traderCollectionId,
+            traderConfirmed: trade.traderConfirmed,
+            traderId: Number(trade.traderId),
+            traderWallet: trade.traderWallet
         }
     }
 

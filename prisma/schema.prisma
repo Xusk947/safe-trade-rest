@@ -14,7 +14,7 @@ model User {
     username   String? @db.VarChar(32)
     language   String  @db.VarChar(2)
     is_premium Boolean
-    photo_url  String
+    photo_url  String?
 
     createdAt DateTime @default(now())
 
