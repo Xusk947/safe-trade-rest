@@ -185,6 +185,7 @@ export class TradeService {
 
         return {
             createdAt: trade.createdAt,
+            creatorCollection: creatorCollection,
             creatorCollectionId: trade.creatorCollectionId,
             creatorConfirmed: trade.creatorConfirmed,
             creatorId: Number(trade.creatorId),
