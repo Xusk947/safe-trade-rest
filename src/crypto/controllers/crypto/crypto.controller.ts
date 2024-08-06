@@ -10,15 +10,17 @@ export class CryptoController {
         private cryptoService: CryptoService
     ) { }
 
-    @Get("account/:id/jetton") 
+    @Get("account/:id/jetton")
     async getAccount(@Param('id') id: string) {
-        this.logger.log(`Get account ${id} jettons`)    
-        return this.cryptoService.getAccountJettons(id)
+        this.logger.log(`Get account ${id} jettons`)
+        let jettons = await this.cryptoService.getAccountJettons(id)
+        this.logger.log(`Get account ${id} jettons: ${JSON.stringify(jettons)}`)
+        return jettons
     }
 
     @Get("account/:id/nfts")
     async getAccountNfts(@Param('id') id: string) {
-        this.logger.log(`Get account ${id} nft items`)    
+        this.logger.log(`Get account ${id} nft items`)
         return this.cryptoService.getAccountNfts(id)
     }
 }

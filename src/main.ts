@@ -3,9 +3,11 @@ import { AppModule } from "./app.module";
 import { stringToHex } from "./trade/services/trade/trade.service";
 
 async function bootstrap() {
+    console.log(`http://localhost:3003?tgWebAppStartParam=`+stringToHex('r-50-r'))
     const app = await NestFactory.create(AppModule, {
         cors: true,
     });
+    
 
     app.enableCors({
         allowedHeaders: ['content-type', 'authorization'],
