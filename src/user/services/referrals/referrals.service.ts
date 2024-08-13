@@ -44,6 +44,8 @@ export class ReferralsService {
                 trades: tradesByReferral
             };
         });
+
+        this.logger.log(`Get ${referrals.length} referrals for user ${userId}`)
     
         return referrals
     }

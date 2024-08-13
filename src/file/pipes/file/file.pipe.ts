@@ -8,8 +8,6 @@ const maxFileSize = 15 * oneMb;
 @Injectable()
 export class FilePipe implements PipeTransform {
     transform(value: any, metadata: ArgumentMetadata) {
-        console.log(value.size, "<", maxFileSize, "?", value.size < maxFileSize)
-
         if (value.size < maxFileSize) {
             return value
         }

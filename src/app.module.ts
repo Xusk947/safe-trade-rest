@@ -8,13 +8,24 @@ import { UserInfoModule } from "./user-info/user-info.module";
 import { TradeModule } from './trade/trade.module';
 import { FileModule } from './file/file.module';
 import { CryptoModule } from './crypto/crypto.module';
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from "path";
+import { SseService } from './sse/services/sse/sse/sse.service';
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
-    imports: [ConfigModule.forRoot({
-        isGlobal: true
-    }), UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true
+        }),
+        // ServeStaticModule.forRoot({
+        //     rootPath: join(__dirname, '..', 'public'),
+        //     exclude: ['/api/*'],
+        // }),
+        ScheduleModule.forRoot(),
+        UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule],
     controllers: [AppController],
-    providers: [AppService, PrismaService]
+    providers: [AppService, PrismaService, SseService]
 })
 export class AppModule {
 }

@@ -70,16 +70,18 @@ model Trade {
 
     refTaxDone Boolean @default(false)
 
-    createdAt   DateTime      @default(now())
-    TradeWallet TradeWallet[]
+    createdAt     DateTime     @default(now())
+    tradeWallet   TradeWallet? @relation(fields: [tradeWalletId], references: [id])
+    tradeWalletId Int?
 }
 
 model TradeWallet {
-    trade Trade @relation(fields: [id], references: [id])
-    id    Int   @id @unique @default(autoincrement())
+    id Int @id @unique @default(autoincrement())
 
     address   String
     mnemonics String
+
+    Trade Trade[]
 }
 
 model ItemsCollection {
@@ -121,6 +123,7 @@ model TokenItem {
 model FileInput {
     id            Int    @id @unique @default(autoincrement())
     filename      String
+    savename      String
     fileextension String
     fileSize      Int
 

@@ -3,13 +3,55 @@ import { PrismaService } from "../../../prisma/services/prisma/prisma.service";
 import { Prisma, Trade } from "@prisma/client";
 import { Items, TradeParams, TradeStatus } from 'src/trade/utils/types';
 import { UpdateTradeDto } from 'src/trade/dtos/update.trade.dto';
+import { generateWallet } from 'src/crypto/utils/walletGenerator';
+import { Address, WalletContractV5R1 } from '@ton/ton';
+import { mnemonicToPrivateKey } from '@ton/crypto';
 
 @Injectable()
 export class TradeService {
+
     private logger = new Logger(TradeService.name)
     constructor(
         private readonly prisma: PrismaService
     ) {
+    }
+
+    private async addItemsToCollection(items: Items, collectionId: number) {
+        if (items.FileItem) {
+            await this.prisma.fileItem.createMany({
+                data: items.FileItem.map((item) => {
+                    return {
+                        fileId: Number(item.fileId),
+                        collectionId: collectionId
+                    }
+                })
+            })
+        }
+
+        if (items.TokenItem) {
+            await this.prisma.tokenItem.createMany({
+                data: items.TokenItem.map((item) => {
+                    console.log(item.image)
+                    console.log(item.image.length)
+                    return {
+                        ...item,
+                        amount: Number(item.amount),
+                        collectionId: collectionId
+                    }
+                })
+            })
+        }
+
+        if (items.NftItem) {
+            await this.prisma.nftItem.createMany({
+                data: items.NftItem.map((item) => {
+                    return {
+                        ...item,
+                        collectionId: collectionId
+                    }
+                })
+            })
+        }
     }
 
     private async createCollection(items: Items, lastCollectionId?: number) {
@@ -58,9 +100,9 @@ export class TradeService {
         }
 
         // Create Items 
-        if (items.fileItems) {
+        if (items.FileItem) {
             await this.prisma.fileItem.createMany({
-                data: items.fileItems.map((item) => {
+                data: items.FileItem.map((item) => {
                     return {
                         fileId: Number(item.fileId),
                         collectionId: collectionId
@@ -69,11 +111,12 @@ export class TradeService {
             })
         }
 
-        if (items.tokenItems) {
+        if (items.TokenItem) {
             await this.prisma.tokenItem.createMany({
-                data: items.tokenItems.map((item) => {
+                data: items.TokenItem.map((item) => {
                     return {
                         ...item,
+                        image: item.image.length > 512 ? "" : item.image,
                         amount: Number(item.amount),
                         collectionId: collectionId
                     }
@@ -81,9 +124,9 @@ export class TradeService {
             })
         }
 
-        if (items.nftItems) {
+        if (items.NftItem) {
             await this.prisma.nftItem.createMany({
-                data: items.nftItems.map((item) => {
+                data: items.NftItem.map((item) => {
                     return {
                         ...item,
                         collectionId: collectionId
@@ -106,10 +149,10 @@ export class TradeService {
         })
     }
 
-    async updateTrade(data: UpdateTradeDto) {
+    async updateTrade(userId: bigint, tradeId: number, data: UpdateTradeDto) {
         let trade = await this.prisma.trade.findUnique({
             where: {
-                id: Number(data.tradeId)
+                id: Number(tradeId)
             },
         })
 
@@ -118,34 +161,43 @@ export class TradeService {
             return new HttpException("Trade not found", 404)
         }
 
-        let creatorCollectionId = trade.creatorCollectionId
-        let traderCollectionId = trade.traderCollectionId
+        const isCreator = trade.creatorId == userId
 
-        if (data.creatorItems) {
-            creatorCollectionId = await this.createCollection(data.creatorItems, creatorCollectionId)
-        }
+        let updateData: Prisma.TradeUpdateInput & { [key: string]: any } = {};
 
-        if (data.traderItems && !traderCollectionId) {
-            traderCollectionId = await this.createCollection(data.traderItems, traderCollectionId)
-        }
-
-        let tradeUpdated = await this.prisma.trade.update({
-            where: {
-                id: Number(data.tradeId)
-            },
-            data: {
-                creatorWallet: data.creatorWallet,
-                creatorId: Number(data.creatorId),
-                traderWallet: data.traderWallet,
-                traderId: Number(data.traderId),
-                creatorCollectionId: creatorCollectionId,
-                traderCollectionId: traderCollectionId
+        if (isCreator) {
+            if (!trade.creatorCollectionId) {
+                const creatorCollectionId = await this.createCollection(data.items);
+                updateData = {
+                    creatorCollectionId: creatorCollectionId,
+                    creatorWallet: data.wallet ?? trade.creatorWallet,
+                };
+            } else {
+                await this.addItemsToCollection(data.items, trade.creatorCollectionId);
+                updateData.creatorWallet = data.wallet ?? trade.creatorWallet;
             }
-        })
+        } else if (trade.traderId === userId) {
+            if (!trade.traderCollectionId) {
+                const traderCollectionId = await this.createCollection(data.items);
+                updateData = {
+                    traderCollectionId: traderCollectionId,
+                    traderWallet: data.wallet ?? trade.traderWallet
+                };
+            } else {
+                await this.addItemsToCollection(data.items, trade.traderCollectionId);
+                updateData.traderWallet = data.wallet ?? trade.traderWallet;
+            }
+        }
 
-        this.logger.log(`Updated trade ${tradeUpdated.id}`)
+        trade = await this.prisma.trade.update({
+            where: { id: Number(tradeId) },
+            data: updateData
+        });
 
-        return tradeUpdated
+        return {
+            status: 200,
+            message: "Trade updated",
+        }
     }
 
     async joinTrade(tradeId: number, userId: BigInt) {
@@ -172,9 +224,12 @@ export class TradeService {
                 id: Number(tradeId)
             },
             data: {
-                traderId: Number(userId)
+                traderId: Number(userId),
+                status: TradeStatus.CONFIRMED
             }
         })
+
+        this.logger.log(`User ${userId} joined trade ${tradeId}`)
 
         return {
             status: 200,
@@ -183,56 +238,49 @@ export class TradeService {
     }
 
     async getTrade(id: number) {
-        let trade = await this.prisma.trade.findUnique({
-            where: {
-                id: Number(id)
-            },
-        })
-
-        const creatorCollection = await this.prisma.itemsCollection.findUnique({
-            where: {
-                id: Number(trade.creatorCollectionId)
-            },
+        const query = Prisma.validator<Prisma.TradeFindUniqueArgs>()({
+            where: { id: Number(id) },
             include: {
-                FileItem: true,
-                NftItem: true,
-                TokenItem: true
-            }
+                trader: true,
+                creator: true,
+                creatorCollection: {
+                    include: {
+                        FileItem: {
+                            include: {
+                                fileInput: true
+                            }
+                        },
+                        NftItem: true,
+                        TokenItem: true,
+                    },
+                },
+                traderCollection: {
+                    include: {
+                        FileItem: {
+                            include: {
+                                fileInput: true
+                            }
+                        },
+                        NftItem: true,
+                        TokenItem: true,
+                    },
+                },
+                tradeWallet: {
+                    select: {
+                        address: true
+                    }
+                },
+            },
         })
 
-        let traderCollection = null
+        const trade = await this.prisma.trade.findUnique(query)
 
-        if (trade.traderCollectionId) {
-            traderCollection = await this.prisma.itemsCollection.findUnique({
-                where: {
-                    id: Number(trade.traderCollectionId)
-                },
-                include: {
-                    FileItem: true,
-                    NftItem: true,
-                    TokenItem: true
-                }
-            })
+        if (!trade) {
+            throw new HttpException("Trade not found", 404)
         }
 
         this.logger.log(`Get trade ${trade.id}`)
-
-        return {
-            createdAt: trade.createdAt,
-            creatorCollection: creatorCollection,
-            creatorCollectionId: trade.creatorCollectionId,
-            creatorConfirmed: trade.creatorConfirmed,
-            creatorId: Number(trade.creatorId),
-            creatorWallet: trade.creatorWallet,
-            id: Number(trade.id),
-            refTaxDone: trade.refTaxDone,
-            status: trade.status,
-            traderCollection: traderCollection,
-            traderCollectionId: trade.traderCollectionId,
-            traderConfirmed: trade.traderConfirmed,
-            traderId: Number(trade.traderId),
-            traderWallet: trade.traderWallet
-        }
+        return trade
     }
 
     async acceptTrade(id: number, userId: number, status: number) {
@@ -263,6 +311,7 @@ export class TradeService {
             } else if (updatedTrade.traderConfirmed == 1 && updatedTrade.creatorConfirmed == 1) {
                 await this.updateTradeStatus(updatedTrade.id, TradeStatus.CONFIRMED)
             }
+            this.tradeIsAccepted(trade)
 
             return {
                 message: "Trade confirmed by creator"
@@ -287,12 +336,45 @@ export class TradeService {
                 await this.updateTradeStatus(updatedTrade.id, TradeStatus.CONFIRMED)
             }
 
+            this.logger.log(`User ${userId} accepted trade ${trade.id}`)
+
+            this.tradeIsAccepted(trade)
+
             return {
-                message: "Trade confirmed by trader"
+                message: "Trade confirmed by trader",
+                status: 200
             }
         }
 
         return new HttpException("User not authorized", 401)
+    }
+
+    async tradeIsAccepted(trade: Trade) {
+        if (!trade.creatorConfirmed || !trade.traderConfirmed) return;
+
+        const walletMnemonics = await generateWallet();
+
+        const keyPair = await mnemonicToPrivateKey(walletMnemonics);
+
+        const wallet = WalletContractV5R1.create({
+            publicKey: keyPair.publicKey,
+            workChain: 0
+        })
+
+        return await this.prisma.trade.update({
+            where: {
+                id: trade.id
+            },
+            data: {
+                status: TradeStatus.CONFIRMED,
+                tradeWallet: {
+                    create: {
+                        address: wallet.address.toString(),
+                        mnemonics: walletMnemonics.map((m) => m.toString()).join(" "),
+                    }
+                }
+            }
+        });
     }
 
     async createTrade(params: TradeParams) {
@@ -304,7 +386,7 @@ export class TradeService {
 
         let trade = await this.prisma.trade.create({
             data: {
-                creatorWallet: params.creatorWallet,
+                creatorWallet: Address.parseRaw(params.creatorWallet).toString({ bounceable: true }),
                 creatorId: params.creatorId,
                 creatorCollectionId: collectionId
             }
@@ -312,8 +394,8 @@ export class TradeService {
 
         const tradeKey = stringToHex(`t-${trade.id}-t`)
         const tradeLink = `https://t.me/safetrade_robot/safetrade?startapp=${tradeKey}`
-
         this.logger.log(`Created trade ${trade.id}`)
+        this.logger.log(tradeLink)
 
         return {
             tradeId: trade.id,
@@ -334,16 +416,22 @@ export class TradeService {
                 ]
             },
             include: {
-                creatorCollection: true,
-                traderCollection: true,
                 creator: true,
                 trader: true,
             }
         })
 
-        this.logger.log(`Get trades ${trades.length} for user ${userId}`)
+        this.logger.log(`Get ${trades.length} trades for user ${userId}`)
 
         return trades
+    }
+
+    async getTradeStatus(userId: bigint, id: number) {
+        const trade = await this.prisma.trade.findUnique({
+            where: {
+                id: id
+            }
+        })
     }
 }
 

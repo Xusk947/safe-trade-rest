@@ -1,14 +1,16 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { stringToHex } from "./trade/services/trade/trade.service";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { join } from "path";
 
 async function bootstrap() {
     console.log(`http://localhost:3003?tgWebAppStartParam=`+stringToHex('r-50-r'))
-    const app = await NestFactory.create(AppModule, {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         cors: true,
     });
     
-
+    app.useStaticAssets(`${process.cwd()}/public`);
     app.enableCors({
         allowedHeaders: ['content-type', 'authorization'],
         origin: true,

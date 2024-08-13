@@ -11,14 +11,6 @@ export class FileService {
         private readonly prisma: PrismaService
     ) { }
 
-    private async saveFileRecord(data: Prisma.FileInputCreateInput) {
-        let record = await this.prisma.fileInput.create({ data });
-
-        this.logger.log(`Saved file record ${record.id} - ${record.filename}`)
-
-        return record
-    }
-
     public async updateFileUser(userId: number, fileId: number) {
         this.prisma.fileInput.update({
             where: {
@@ -30,18 +22,24 @@ export class FileService {
         })
     }
 
-    async saveFile(file: Express.Multer.File) {
+    async saveFile(userId: bigint, file: Express.Multer.File) {
         const hasExtensions: boolean = file.originalname.split('.').length > 1
-        
-        const fileextension = hasExtensions ? file.originalname.split('.')[1] : 'unknown'
-        const filename = Date.now() + file.originalname
-        console.log(filename, fileextension)
 
-        let record = await this.saveFileRecord({
-            fileextension: fileextension,
-            filename: filename,
-            fileSize: file.size,
+        const splited = hasExtensions ? file.originalname.split('.') : file.originalname
+        const fileextension = hasExtensions ? splited[splited.length - 1] : 'unknown'
+        const filename = splited[0]
+
+        let record = await this.prisma.fileInput.create({
+            data: {
+                filename: filename,
+                fileextension: fileextension,
+                savename: file.filename,
+                fileSize: file.size,
+                userId: userId,
+            }
         })
+
+        this.logger.log(`Saved file record ${record.id} - ${record.filename}`)
 
         return record
     }
