@@ -6,13 +6,16 @@ import { UpdateTradeDto } from 'src/trade/dtos/update.trade.dto';
 import { generateWallet } from 'src/crypto/utils/walletGenerator';
 import { Address, WalletContractV5R1 } from '@ton/ton';
 import { mnemonicToPrivateKey } from '@ton/crypto';
+import { TradeStatusService } from '../trade-status/trade-status.service';
+import { TradeStatusData } from '../trade-status/utils/types';
 
 @Injectable()
 export class TradeService {
 
     private logger = new Logger(TradeService.name)
     constructor(
-        private readonly prisma: PrismaService
+        private readonly prisma: PrismaService,
+        private readonly tradeStatusService: TradeStatusService,
     ) {
     }
 
@@ -279,8 +282,24 @@ export class TradeService {
             throw new HttpException("Trade not found", 404)
         }
 
+        let tradeStatus: TradeStatusData = null;
+
+        if (trade.status != TradeStatus.REJECTED && trade.tradeWallet && trade.tradeWallet.address) {
+            const tradeWalletAddress = trade.tradeWallet.address;
+
+            tradeStatus = await this.tradeStatusService.getTradeStatus(trade, tradeWalletAddress, {
+                fileItems: trade.creatorCollection.FileItem,
+                nftItems: trade.creatorCollection.NftItem,
+                tokenItems: trade.creatorCollection.TokenItem
+            }, {
+                fileItems: trade.traderCollection.FileItem,
+                nftItems: trade.traderCollection.NftItem,
+                tokenItems: trade.traderCollection.TokenItem
+            })
+        }
+
         this.logger.log(`Get trade ${trade.id}`)
-        return trade
+        return { ...trade, tradeStatus };
     }
 
     async acceptTrade(id: number, userId: number, status: number) {
@@ -386,7 +405,7 @@ export class TradeService {
 
         let trade = await this.prisma.trade.create({
             data: {
-                creatorWallet: Address.parseRaw(params.creatorWallet).toString({ bounceable: true }),
+                creatorWallet: params.creatorWallet,
                 creatorId: params.creatorId,
                 creatorCollectionId: collectionId
             }
@@ -426,12 +445,55 @@ export class TradeService {
         return trades
     }
 
-    async getTradeStatus(userId: bigint, id: number) {
+    async getTradeStatus(id: number | string) {
         const trade = await this.prisma.trade.findUnique({
             where: {
-                id: id
+                id: Number(id)
+            },
+            include: {
+                creator: true,
+                trader: true,
+                tradeWallet: true,
+                creatorCollection: {
+                    include: {
+                        FileItem: {
+                            include: {
+                                fileInput: true
+                            }
+                        },
+                        NftItem: true,
+                        TokenItem: true,
+                    }
+                },
+                traderCollection: {
+                    include: {
+                        FileItem: {
+                            include: {
+                                fileInput: true
+                            }
+                        },
+                        NftItem: true,
+                        TokenItem: true,
+                    }
+                }
             }
-        })
+        });
+
+        // this.logger.log(trade.tradeWallet.address);
+
+        this.logger.log(`Get trade status for trade ${id}`)
+
+        // return await this.tradeStatusService.getTraces(trade.tradeWallet.address);
+
+        return this.tradeStatusService.getTradeStatus(trade, trade.tradeWallet.address, {
+            fileItems: trade.creatorCollection.FileItem,
+            nftItems: trade.creatorCollection.NftItem,
+            tokenItems: trade.creatorCollection.TokenItem,
+        }, {
+            fileItems: trade.traderCollection.FileItem,
+            nftItems: trade.traderCollection.NftItem,
+            tokenItems: trade.traderCollection.TokenItem,
+        });
     }
 }
 

@@ -12,16 +12,21 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from "path";
 import { SseService } from './sse/services/sse/sse/sse.service';
 import { ScheduleModule } from "@nestjs/schedule";
+import { DevtoolsModule } from "@nestjs/devtools-integration";
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true
         }),
+        DevtoolsModule.register({
+            http: process.env.NODE_ENV !== 'production',
+        }),
         // ServeStaticModule.forRoot({
         //     rootPath: join(__dirname, '..', 'public'),
         //     exclude: ['/api/*'],
         // }),
+        
         ScheduleModule.forRoot(),
         UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule],
     controllers: [AppController],

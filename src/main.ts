@@ -8,6 +8,7 @@ async function bootstrap() {
     console.log(`http://localhost:3003?tgWebAppStartParam=`+stringToHex('r-50-r'))
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         cors: true,
+        snapshot: true,
     });
     
     app.useStaticAssets(`${process.cwd()}/public`);

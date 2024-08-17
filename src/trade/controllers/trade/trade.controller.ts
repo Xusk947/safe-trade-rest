@@ -24,8 +24,8 @@ export class TradeController {
     }
 
     @Get(":id/status")
-    async getTradeStatus(@Param('id') id: number, @Param('userId') userId: string) {
-        return await this.tradeService.getTradeStatus(BigInt(userId), id)
+    async getTradeStatus(@Param('id') id: number) {
+        return await this.tradeService.getTradeStatus(id)
     }
 
     @Post(":id/:userId") 

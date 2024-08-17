@@ -65,6 +65,7 @@ model Trade {
 
     creatorConfirmed Int @default(-1)
     traderConfirmed  Int @default(-1)
+    comission BigInt @default(1)
 
     status String @default("CREATED")
 
