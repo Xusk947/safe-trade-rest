@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Logger, LoggerService, MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ConfigModule } from "@nestjs/config";
@@ -20,17 +20,22 @@ import { DevtoolsModule } from "@nestjs/devtools-integration";
             isGlobal: true
         }),
         DevtoolsModule.register({
-            http: process.env.NODE_ENV !== 'production',
+            http: process.env.NODE_ENV == 'debug',
+            port: Number(process.env.DEBUG_PORT)
         }),
         // ServeStaticModule.forRoot({
         //     rootPath: join(__dirname, '..', 'public'),
         //     exclude: ['/api/*'],
         // }),
-        
-        ScheduleModule.forRoot(),
         UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule],
     controllers: [AppController],
-    providers: [AppService, PrismaService, SseService]
+    providers: [AppService]
 })
-export class AppModule {
+export class AppModule implements NestModule {
+    private readonly logger: Logger = new Logger(AppModule.name)
+    
+    configure(consumer: MiddlewareConsumer) {
+        this.logger.log(`Configuring app module, ${process.env.NODE_ENV}`)    
+    }
+    
 }
