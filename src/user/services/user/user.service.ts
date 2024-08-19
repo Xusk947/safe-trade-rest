@@ -41,9 +41,9 @@ export class UserService {
                     }
                 })
 
-                return new HttpException("User photo updated", 200)
+                return userInDb
             }
-            return new HttpException("User already exists", 409)
+            return userInDb
         }
 
         let newUser: { id: number | BigInt; firstname: string; lastname: string | null; username: string | null; language: string; is_premium: boolean; createdAt: Date; };

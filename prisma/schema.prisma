@@ -27,6 +27,8 @@ model User {
 
     userInviter  UserReferrals[] @relation("userInviter")
     userReferral UserReferrals[] @relation("userReferral")
+
+    Admin Admin[] @relation("admin")
 }
 
 model UserReferrals {
@@ -43,6 +45,18 @@ model UserInfo {
     user   User    @relation(fields: [userId], references: [id])
     userId BigInt  @id @unique
     wallet String?
+}
+
+model Admin {
+    user   User    @relation("admin", fields: [userid], references: [id])
+    userid BigInt @unique
+    
+    adminType Int
+}
+
+model AdminPermissions {
+    id   Int    @id @default(autoincrement())
+    name String @default("")
 }
 
 model Trade {
@@ -63,9 +77,9 @@ model Trade {
     traderCollection   ItemsCollection? @relation("traderCollection", fields: [traderCollectionId], references: [id])
     traderCollectionId Int?
 
-    creatorConfirmed Int @default(-1)
-    traderConfirmed  Int @default(-1)
-    comission BigInt @default(1)
+    creatorConfirmed Int    @default(-1)
+    traderConfirmed  Int    @default(-1)
+    comission        BigInt @default(1)
 
     status String @default("CREATED")
 
