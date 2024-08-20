@@ -13,6 +13,8 @@ import { join } from "path";
 import { SseService } from './sse/services/sse/sse/sse.service';
 import { ScheduleModule } from "@nestjs/schedule";
 import { DevtoolsModule } from "@nestjs/devtools-integration";
+import { AuthModule } from './auth/auth.module';
+import { TgbotModule } from './tgbot/tgbot.module';
 
 @Module({
     imports: [
@@ -27,7 +29,7 @@ import { DevtoolsModule } from "@nestjs/devtools-integration";
         //     rootPath: join(__dirname, '..', 'public'),
         //     exclude: ['/api/*'],
         // }),
-        UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule],
+        UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule, AuthModule, TgbotModule],
     controllers: [AppController],
     providers: [AppService]
 })
