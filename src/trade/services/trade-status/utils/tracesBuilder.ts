@@ -35,6 +35,10 @@ export class TracesBuilder {
                 value += trace.amount;
                 transactions++;
                 hasItem = true;
+            } else if (trace.to == sender && trace.tokenAddress == "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c") {
+                value += trace.amount;
+                transactions++;
+                hasItem = true;
             }
         }
 

@@ -5,7 +5,6 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import { join } from "path";
 
 async function bootstrap() {
-    console.log(`http://localhost:3003?tgWebAppStartParam=`+stringToHex('r-50-r'))
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         cors: true,
         snapshot: true,

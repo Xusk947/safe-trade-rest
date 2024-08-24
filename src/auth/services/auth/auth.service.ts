@@ -20,11 +20,14 @@ export class AuthService {
         return user;
     }
 
-    async login(user: User) {
+    async verify(token: string) {
+        return await this.jwtService.verify(token)
+    }
+
+    async sign(user: User) {
         const payload = {
             sub: user.id,
             firstname: user.firstname,
-            username: user.username,
             createdAt: user.createdAt.toISOString(),
         };
 

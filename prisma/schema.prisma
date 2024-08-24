@@ -28,7 +28,7 @@ model User {
     userInviter  UserReferrals[] @relation("userInviter")
     userReferral UserReferrals[] @relation("userReferral")
 
-    Admin Admin[] @relation("admin")
+    Admin Admin[]
 }
 
 model UserReferrals {
@@ -48,10 +48,12 @@ model UserInfo {
 }
 
 model Admin {
-    user   User    @relation("admin", fields: [userid], references: [id])
-    userid BigInt @unique
+    user   User    @relation(fields: [userid], references: [id])
+    userid BigInt @id @unique 
     
     adminType Int
+    assignedAt DateTime @default(now())
+    assignedBy String @default("Server")
 }
 
 model AdminPermissions {
@@ -79,15 +81,16 @@ model Trade {
 
     creatorConfirmed Int    @default(-1)
     traderConfirmed  Int    @default(-1)
-    comission        BigInt @default(1)
 
     status String @default("CREATED")
 
-    refTaxDone Boolean @default(false)
+    hash String? 
 
     createdAt     DateTime     @default(now())
     tradeWallet   TradeWallet? @relation(fields: [tradeWalletId], references: [id])
     tradeWalletId Int?
+
+    TradePayment TradePayment[]
 }
 
 model TradeWallet {
@@ -96,7 +99,17 @@ model TradeWallet {
     address   String
     mnemonics String
 
+    createdAt DateTime @default(now())
+
     Trade Trade[]
+}
+
+model TradePayment {
+    id Int @id @unique @default(autoincrement())
+    Trade Trade @relation(fields: [id], references: [id])
+
+    amount Int @default(0)
+    createdAt DateTime @default(now())
 }
 
 model ItemsCollection {

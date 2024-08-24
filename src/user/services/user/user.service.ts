@@ -27,6 +27,15 @@ export class UserService {
         let userInDb = await this.prisma.user.findUnique({
             where: {
                 id: data.id
+            },                    
+            include: {
+                Admin: {
+                    select: {
+                        adminType: true,
+                        assignedAt: true,
+                        assignedBy: true,
+                    }
+                }
             }
         })
 
@@ -38,7 +47,7 @@ export class UserService {
                     },
                     data: {
                         photo_url: data.photo_url
-                    }
+                    },
                 })
 
                 return userInDb
@@ -62,6 +71,7 @@ export class UserService {
                     },
                 }
             );
+
         } catch (error) {
             Logger.error(`Error while creating user ${error} ${data.id} - ${data.firstname} ${data.username}`)
             return new HttpException(error, 500)
@@ -79,7 +89,7 @@ export class UserService {
             })
         }
 
-        this.logger.log(`Created user ${newUser} ${(data.referral && data.referral != data.id) ? 'with referral ' + data.referral : ''}`)
+        this.logger.log(`Created user "${newUser.firstname}" ${(data.referral && data.referral != data.id) ? 'with referral ' + data.referral : ''}`)
 
         return newUser
     }

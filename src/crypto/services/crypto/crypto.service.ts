@@ -3,6 +3,8 @@ import { TonApiClient, TonApiRawRequest } from 'src/crypto/client/tonApiClient';
 import axios from 'axios'
 import { JettonBalance, JettonsBalances, JettonVerificationType } from 'tonapi-sdk-js';
 import { fromNano } from 'src/crypto/utils/converter';
+import { GetNativeTon } from 'src/crypto/utils/nativeTon';
+import { Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class CryptoService {
@@ -23,7 +25,7 @@ export class CryptoService {
             balances.sort((a, b) => b.price['prices'].USD - a.price['prices'].USD)
 
             // push native TON at first
-            const nativeTon = await getNativeTon(id)
+            const nativeTon = await GetNativeTon(id)
             balances.unshift(nativeTon)
 
             return balances;
@@ -50,27 +52,3 @@ export class CryptoService {
 }
 
 
-async function getNativeTon(wallet: string): Promise<JettonBalance> {
-    const account = await TonApiClient.accounts.getAccount(wallet);
-
-    const balance: JettonBalance = {
-        balance: fromNano(account.balance),
-        jetton: {
-            address: "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c",
-            decimals: 0,
-            image: "https://ton.org/icons/custom/ton_logo.svg",
-            name: "TON",
-            symbol: "TON",
-            verification: JettonVerificationType.Whitelist
-        },
-        wallet_address: {
-            address: account.address,
-            is_scam: account.is_scam,
-            is_wallet: account.is_wallet,
-            name: account.name,
-            icon: account.icon
-        },
-    }
-
-    return balance
-}

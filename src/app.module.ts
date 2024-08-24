@@ -14,7 +14,7 @@ import { SseService } from './sse/services/sse/sse/sse.service';
 import { ScheduleModule } from "@nestjs/schedule";
 import { DevtoolsModule } from "@nestjs/devtools-integration";
 import { AuthModule } from './auth/auth.module';
-import { TgbotModule } from './tgbot/tgbot.module';
+import { TelegramBotModule } from './telegramBot/telegram.bot.module';
 
 @Module({
     imports: [
@@ -25,13 +25,14 @@ import { TgbotModule } from './tgbot/tgbot.module';
             http: process.env.NODE_ENV == 'debug',
             port: Number(process.env.DEBUG_PORT)
         }),
+        
         // ServeStaticModule.forRoot({
         //     rootPath: join(__dirname, '..', 'public'),
         //     exclude: ['/api/*'],
         // }),
-        UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule, AuthModule, TgbotModule],
+        UserModule, UserInfoModule, TradeModule, FileModule, CryptoModule, AuthModule, TelegramBotModule],
     controllers: [AppController],
-    providers: [AppService]
+    providers: [AppService ]
 })
 export class AppModule implements NestModule {
     private readonly logger: Logger = new Logger(AppModule.name)

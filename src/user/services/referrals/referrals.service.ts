@@ -18,26 +18,28 @@ export class ReferralsService {
             },
             orderBy: {
                 inviter: {
-                    createdAt: 'desc'
+                    createdAt: 'asc'
                 }
             },
             include: {
                 referral: true,
-            }
+            },
         })
 
         let trades = await this.prisma.trade.findMany({
             where: {
                 creatorId: { in: refs.map((referral) => referral.inviterId) },
-                refTaxDone: false
+                NOT: [{ TradePayment: { none: {} } }]
             },
             include: {
                 creator: true,
-            }
+            },
         })
 
         const referrals = refs.map((referral) => {
-            const tradesByReferral = trades.filter((trade) => trade.creatorId == referral.referral.id);
+            const tradesByReferral = trades.filter((trade) => {
+                return trade.creatorId == referral.referral.id
+            });
             return {
                 ...referral.referral,
                 id: referral.referral.id,
