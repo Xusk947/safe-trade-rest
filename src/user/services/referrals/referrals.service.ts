@@ -11,7 +11,7 @@ export class ReferralsService {
         private readonly prisma: PrismaService
     ) { }
 
-    public async getReferralsByUserId(userId: number) {
+    public async getReferralsByUserId(userId: number | bigint) {
         let refs = await this.prisma.userReferrals.findMany({
             where: {
                 inviterId: userId
@@ -22,9 +22,14 @@ export class ReferralsService {
                 }
             },
             include: {
-                referral: true,
+                referral: {
+                    include: {
+                        UserFarming: true
+                    }    
+                },
             },
         })
+
 
         let trades = await this.prisma.trade.findMany({
             where: {
@@ -43,12 +48,28 @@ export class ReferralsService {
             return {
                 ...referral.referral,
                 id: referral.referral.id,
-                trades: tradesByReferral
+                trades: tradesByReferral,
+                referralPoints: referral.referral.UserFarming?.referralPoints ?? 0
             };
         });
 
         this.logger.log(`Get ${referrals.length} referrals for user ${userId}`)
-    
-        return referrals
+
+        // sort by amount of trades, then by amount of points to bottom
+        return referrals.sort((a, b) => {
+            if (a.trades.length < b.trades.length) {
+                return 1
+            }
+            if (a.trades.length > b.trades.length) {
+                return -1
+            }
+            if (a.referralPoints < b.referralPoints) {
+                return 1
+            }
+            if (a.referralPoints > b.referralPoints) {
+                return -1
+            }
+            return 0
+        })
     }
 }

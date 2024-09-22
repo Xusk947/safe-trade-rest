@@ -7,6 +7,15 @@ export function StartCommand(bot: Telegraf) {
             'Hello!',
             Markup.inlineKeyboard([
                 Markup.button.webApp('Open Web App', `https://safe-trade.swapy.tg/`),
+            ])
+        );
+    })
+
+    bot.command('dev', (ctx) => {
+        ctx.reply(
+            'Hello!',
+            Markup.inlineKeyboard([
+                Markup.button.webApp('Open Web App', `https://safe-trade.swapy.tg/`),
                 Markup.button.webApp('( tgbot.local )', `https://tgbot.local/`),
             ])
         );

@@ -28,7 +28,13 @@ model User {
     userInviter  UserReferrals[] @relation("userInviter")
     userReferral UserReferrals[] @relation("userReferral")
 
-    Admin Admin[]
+    betaTester Boolean @default(false)
+
+    Admin Admin? @relation("userAdmin")
+
+    UserFarming UserFarming? @relation("userFarming")
+
+    UserTask UserTask[] @relation("userTasks")
 }
 
 model UserReferrals {
@@ -41,19 +47,53 @@ model UserReferrals {
     createdAt DateTime @default(now())
 }
 
+model UserFarming {
+    User User @relation("userFarming", fields: [userId], references: [id])
+
+    userId          BigInt   @id @unique
+    lastFarmingTime DateTime @default(now())
+    farmingTime     Int      @default(0)
+    earnedPoints    Float    @default(0)
+    referralPoints  Float    @default(0)
+}
+
+model Task {
+    id Int @id @unique @default(autoincrement())
+
+    name      String
+    icon      String
+    points    Float
+    condition String @default("")
+    category  String @default("SMM")
+
+    UserTasks UserTask[]
+}
+
+model UserTask {
+    id Int @id @default(autoincrement())
+    User   User   @relation("userTasks", fields: [userId], references: [id])
+    userId BigInt
+
+    Task   Task @relation(fields: [taskId], references: [id])
+    taskId Int
+
+    @@unique([userId, taskId])
+	@@map("UserTasks")
+}
+
 model UserInfo {
     user   User    @relation(fields: [userId], references: [id])
-    userId BigInt  @id @unique
+    userId BigInt  @id
     wallet String?
 }
 
 model Admin {
-    user   User    @relation(fields: [userid], references: [id])
-    userid BigInt @id @unique 
-    
-    adminType Int
+    User   User   @relation("userAdmin", fields: [userid], references: [id])
+    userid BigInt @id @unique
+
+    adminType  Int
     assignedAt DateTime @default(now())
-    assignedBy String @default("Server")
+    assignedBy String   @default("Server")
 }
 
 model AdminPermissions {
@@ -79,12 +119,12 @@ model Trade {
     traderCollection   ItemsCollection? @relation("traderCollection", fields: [traderCollectionId], references: [id])
     traderCollectionId Int?
 
-    creatorConfirmed Int    @default(-1)
-    traderConfirmed  Int    @default(-1)
+    creatorConfirmed Int @default(-1)
+    traderConfirmed  Int @default(-1)
 
     status String @default("CREATED")
 
-    hash String? 
+    hash String?
 
     createdAt     DateTime     @default(now())
     tradeWallet   TradeWallet? @relation(fields: [tradeWalletId], references: [id])
@@ -105,10 +145,10 @@ model TradeWallet {
 }
 
 model TradePayment {
-    id Int @id @unique @default(autoincrement())
+    id    Int   @id @unique @default(autoincrement())
     Trade Trade @relation(fields: [id], references: [id])
 
-    amount Int @default(0)
+    amount    Int      @default(0)
     createdAt DateTime @default(now())
 }
 

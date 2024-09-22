@@ -23,7 +23,6 @@ async function bootstrap() {
 
 async function main() {
     bootstrap();
-    
 }
 
 main();

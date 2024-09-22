@@ -166,8 +166,10 @@ export class TradeStatusService {
             case TradeStatus.SENDING_ITEMS:
                 const isSent = await this.cache.get(`sent-trade-${trade.id}`);
                 if (isSent || trade.hash) {
-
-                    return await this.getSendedItems(tradeWallet, creatorCollection, traderCollection);
+                    if (trade.hash) {
+                        await this.getSendedItems(trade.hash, trade, creatorCollection, traderCollection);
+                    }
+                    return { items, status };
                 } else if (!trade.hash) {
 
                     const wallet = await this.getTradeWalletMnemonic(trade.tradeWalletId);
@@ -261,16 +263,16 @@ export class TradeStatusService {
 
         this.waitForResponse.set(tradeId, true);
         const response = await axios.post(`${process.env.GO_SERVER_URL}/v1/ton/send/tokens/`, transactionTransfer)
-        .then((response) => {
-            this.waitForResponse.delete(tradeId);
-            return response;
-        })
-        .catch((error) => {
-            this.waitForResponse.delete(tradeId);
-            throw error
-        })
+            .then((response) => {
+                this.waitForResponse.delete(tradeId);
+                return response;
+            })
+            .catch((error) => {
+                this.waitForResponse.delete(tradeId);
+                throw error
+            })
 
-        const data = response.data as {hash: string};
+        const data = response.data as { hash: string };
 
         await this.prisma.trade.update({
             where: {
@@ -458,7 +460,17 @@ export class TradeStatusService {
     private async getVerifiedItems(tradeWallet: string, creatorCollection: Collection, traderCollection: Collection) {
         return null;
     }
-    private async getSendedItems(tradeWallet: string, creatorCollection: Collection, traderCollection: Collection) {
+    private async getSendedItems(hash: string, trade: Trade, creatorCollection: Collection, traderCollection: Collection) {
+        const traces = await TonApiClient.traces.getTrace(hash)
+
+        if (!traces) {
+            return null;
+        }
+
+        if (traces.transaction.success) {
+            this.updateTradeStatus(trade, TradeStatus.DELIVERED)
+        }
+
         return null;
     }
 }
